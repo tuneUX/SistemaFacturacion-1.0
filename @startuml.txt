@@ -1,0 +1,104 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+'======================
+' CLASES PRINCIPALES
+'======================
+
+class Usuario {
+  - id : int
+  - nombre : String
+  - rol : String
+  --
+  + login() : boolean
+  + logout() : void
+}
+
+class Cliente {
+  - id : int
+  - nombre : String
+  - telefono : String
+  --
+  + actualizarDatos() : void
+}
+
+class Producto {
+  - id : int
+  - nombre : String
+  - precio : double
+  - stock : int
+  --
+  + actualizarPrecio(precio : double) : void
+  + actualizarStock(cantidad : int) : void
+}
+
+class DetalleFactura {
+  - producto : Producto
+  - cantidad : int
+  - subtotal : double
+  --
+  + calcularSubtotal() : double
+}
+
+class Factura {
+  - id : int
+  - fecha : Date
+  - cliente : Cliente
+  - items : List<DetalleFactura>
+  - total : double
+  --
+  + agregarItem(item : DetalleFactura) : void
+  + calcularTotal() : double
+  + generarFactura() : void
+}
+
+'======================
+' TADS (ABSTRACCION)
+'======================
+
+class Inventario <<TAD>> {
+  - productos : Map<int, Producto>
+  --
+  + agregarProducto(p : Producto) : void
+  + eliminarProducto(id : int) : void
+  + buscarProducto(id : int) : Producto
+  + actualizarStock(id : int, cantidad : int) : void
+}
+
+class ListaFacturas <<TAD>> {
+  - facturas : List<Factura>
+  --
+  + agregarFactura(f : Factura) : void
+  + buscarFactura(id : int) : Factura
+  + calcularVentasTotales() : double
+}
+
+class Sistema {
+  --
+  + registrarVenta() : void
+  + generarReporte() : void
+}
+
+class BaseDeDatos {
+  + guardar() : void
+  + leer() : void
+}
+
+'======================
+' RELACIONES UML
+'======================
+
+Usuario --> Sistema : usa
+Sistema *-- Inventario : contiene
+Sistema *-- ListaFacturas : contiene
+
+Factura "1" o-- "*" DetalleFactura
+DetalleFactura "*" --> "1" Producto
+Factura "1" --> "1" Cliente
+
+Inventario --> Producto
+ListaFacturas --> Factura
+
+Sistema --> BaseDeDatos : almacena
+
+@enduml

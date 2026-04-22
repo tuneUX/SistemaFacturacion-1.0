@@ -45,13 +45,14 @@ public class MainWindow extends JFrame {
         menuProducto.add(new JMenuItem("Eliminar Producto"));
         btnProducto.addActionListener(e -> menuProducto.show(btnProducto, 0, btnProducto.getHeight()));
 
-        // --- Venta ---
+       // --- Venta ---
         btnVenta = new Style("Venta", darkBrown);
         menuVenta = new JPopupMenu();
         menuVenta.add(new JMenuItem("Registrar Venta"));
         menuVenta.add(new JMenuItem("Buscar Venta"));
-        menuVenta.add(new JMenuItem("Anular Venta"));
+        menuVenta.add(new JMenuItem("Eliminar Venta"));
         btnVenta.addActionListener(e -> menuVenta.show(btnVenta, 0, btnVenta.getHeight()));
+
 
         // --- Reporte ---
         btnReporte = new Style("Reporte", darkBlue);

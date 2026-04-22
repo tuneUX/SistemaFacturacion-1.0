@@ -1,31 +1,36 @@
 package def;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class Factura {
     private int id;
     private Date fecha;
     private Cliente cliente;
-    private List<DetalleFactura> items = new ArrayList<>();
+    private List<DetalleFactura> items;
     private double total;
 
-    public Factura(int id, Cliente cliente , Date fecha , double total) {
+    // Constructor
+    public Factura(int id, Cliente cliente, Date fecha, double total) {
         this.id = id;
         this.fecha = fecha;
         this.cliente = cliente;
         this.items = new ArrayList<>();
+        this.total = total;
     }
 
-    //  Getters obligatorios
+    // Getters
     public int getId() { return id; }
     public Date getFecha() { return fecha; }
     public Cliente getCliente() { return cliente; }
     public double getTotal() { return total; }
-    public List<DetalleFactura> getItems() {
-    return items;
-}
+    public List<DetalleFactura> getItems() { return items; }
 
-    
-    // Metodos de comportamiento
+    // Setter for ID ( to sync with DB generated ID)
+    public void setId(int id) { this.id = id; }
+
+    // metodos de comportamiento
     public void agregarItem(DetalleFactura item) {
         items.add(item);
         calcularTotal();
@@ -37,9 +42,18 @@ public class Factura {
             total += item.calcularSubtotal();
         }
     }
-   
 
     public void generarFactura() {
-        System.out.println("Factura #" + id + " Cliente: " + cliente.getNombre() + " Total: " + total);
+        System.out.println("Factura #" + id + 
+                           " Cliente: " + cliente.getNombre() + 
+                           " Total: " + total);
+    }
+
+    @Override
+    public String toString() {
+        return "Factura #" + id + 
+               " | Cliente: " + cliente.getNombre() + 
+               " | Fecha: " + fecha + 
+               " | Total: " + total;
     }
 }

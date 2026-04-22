@@ -146,29 +146,55 @@ public class MainController {
             }
         });
 
-        // --- Venta / Factura ---
-        JMenuItem registrarVenta = (JMenuItem) ventana.getMenuVenta().getComponent(0);
-        registrarVenta.addActionListener(e -> {
-            JTextField txtIdCliente = new JTextField();
-            JTextField txtIdProducto = new JTextField();
-            JTextField txtCantidad = new JTextField();
+      // --- Venta / Factura ---
+JMenuItem registrarVenta = (JMenuItem) ventana.getMenuVenta().getComponent(0);
+registrarVenta.addActionListener(e -> {
+    JTextField txtIdCliente = new JTextField();
+    JTextField txtIdProducto = new JTextField();
+    JTextField txtCantidad = new JTextField();
 
-            Object[] campos = {"ID Cliente:", txtIdCliente, "ID Producto:", txtIdProducto, "Cantidad:", txtCantidad};
+    Object[] campos = {"ID Cliente:", txtIdCliente, "ID Producto:", txtIdProducto, "Cantidad:", txtCantidad};
 
-            int opcion = JOptionPane.showConfirmDialog(ventana, campos, "Registrar Venta", JOptionPane.OK_CANCEL_OPTION);
-            if (opcion == JOptionPane.OK_OPTION) {
-                try {
-                    int idCliente = Integer.parseInt(txtIdCliente.getText());
-                    int idProducto = Integer.parseInt(txtIdProducto.getText());
-                    int cantidad = Integer.parseInt(txtCantidad.getText());
-                    Factura factura = sistema.registrarVenta(idCliente, idProducto, cantidad);
-                    JOptionPane.showMessageDialog(ventana, "Venta registrada. Factura #" + factura.getId());
-                    
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(ventana, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
+    int opcion = JOptionPane.showConfirmDialog(ventana, campos, "Registrar Venta", JOptionPane.OK_CANCEL_OPTION);
+    if (opcion == JOptionPane.OK_OPTION) {
+        try {
+            int idCliente = Integer.parseInt(txtIdCliente.getText());
+            int idProducto = Integer.parseInt(txtIdProducto.getText());
+            int cantidad = Integer.parseInt(txtCantidad.getText());
+            Factura factura = sistema.registrarVenta(idCliente, idProducto, cantidad);
+            JOptionPane.showMessageDialog(ventana, "Venta registrada. Factura #" + factura.getId());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(ventana, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+});
+
+// Buscar Venta
+JMenuItem buscarVenta = (JMenuItem) ventana.getMenuVenta().getComponent(1);
+buscarVenta.addActionListener(e -> {
+    String idStr = JOptionPane.showInputDialog(ventana, "Ingrese ID de la factura:");
+    try {
+        int id = Integer.parseInt(idStr);
+        Factura f = sistema.buscarFactura(id);
+        JOptionPane.showMessageDialog(ventana, f != null ? "Factura encontrada:\n" + f : "Factura no encontrada.");
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(ventana, "ID invalido.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+});
+
+// Eliminar Venta
+JMenuItem eliminarVenta = (JMenuItem) ventana.getMenuVenta().getComponent(2);
+eliminarVenta.addActionListener(e -> {
+    String idStr = JOptionPane.showInputDialog(ventana, "Ingrese ID de la factura a eliminar:");
+    try {
+        int id = Integer.parseInt(idStr);
+        sistema.eliminarFactura(id);
+        JOptionPane.showMessageDialog(ventana, "Factura eliminada.");
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(ventana, "ID inválido.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+});
+
  
 
 

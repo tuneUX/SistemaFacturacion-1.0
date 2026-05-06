@@ -1,137 +1,99 @@
 package DataBase;
 
-import def.Factura;
-import def.Cliente;
-import def.DetalleFactura;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import def.Factura;
+import def.Cliente;
 
 public class FacturaDao {
 
     // Insertar factura y devolver el ID generado
-    public static int insertarFactura(Connection conn, Factura f) {
-        String sql = "INSERT INTO facturas(cliente_id, fecha, total) VALUES(?, ?, ?)";
+    public static int insertarFactura(Connection conn, Factura factura) {
+        String sql = "INSERT INTO facturas (cliente_id, fecha, total) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setInt(1, f.getCliente().getId());
-            pstmt.setDate(2, new java.sql.Date(f.getFecha().getTime())); // convertir Date a SQL Date
-            pstmt.setDouble(3, f.getTotal());
+            pstmt.setInt(1, factura.getCliente().getId());
+            pstmt.setDate(2, new java.sql.Date(factura.getFecha().getTime()));
+            pstmt.setDouble(3, factura.getTotal());
             pstmt.executeUpdate();
 
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1); // devuelve el ID generado
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // devuelve el ID generado
+                }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return -1;
     }
 
-    // Buscar factura por ID (incluye detalles)
+    // Buscar factura por ID
     public static Factura buscarFactura(Connection conn, int id) {
-        String sql = "SELECT id, cliente_id, fecha, total FROM facturas WHERE id = ?";
+        String sql = "SELECT * FROM facturas WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                int clienteId = rs.getInt("cliente_id");
-                Cliente cliente = ClientesDao.buscarCliente(conn, clienteId);
-
-                Factura f = new Factura(
-                    rs.getInt("id"),
-                    cliente,
-                    rs.getDate("fecha"),
-                    rs.getDouble("total")
-                );
-
-                // Cargar detalles desde detalle_factura
-                List<DetalleFactura> detalles = DetalleFacturaDao.listarDetallesPorFactura(conn, id);
-                for (DetalleFactura d : detalles) {
-                    f.agregarItem(d);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Cliente cliente = ClientesDao.buscarCliente(conn, rs.getInt("cliente_id"));
+                    return new Factura(
+                        rs.getInt("id"),
+                        cliente,
+                        rs.getDate("fecha"),
+                        rs.getDouble("total")
+                    );
                 }
-
-                return f;
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    // Listar todas las facturas (incluye detalles)
+    // Listar todas las facturas
     public static List<Factura> listarFacturas(Connection conn) {
         List<Factura> lista = new ArrayList<>();
-        String sql = "SELECT id, cliente_id, fecha, total FROM facturas";
+        String sql = "SELECT * FROM facturas";
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                int clienteId = rs.getInt("cliente_id");
-                Cliente cliente = ClientesDao.buscarCliente(conn, clienteId);
-
-                Factura f = new Factura(
+                Cliente cliente = ClientesDao.buscarCliente(conn, rs.getInt("cliente_id"));
+                Factura factura = new Factura(
                     rs.getInt("id"),
                     cliente,
                     rs.getDate("fecha"),
                     rs.getDouble("total")
                 );
-
-                // Cargar detalles de cada factura
-                List<DetalleFactura> detalles = DetalleFacturaDao.listarDetallesPorFactura(conn, f.getId());
-                for (DetalleFactura d : detalles) {
-                    f.agregarItem(d);
-                }
-
-                lista.add(f);
+                lista.add(factura);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return lista;
     }
 
-    // Actualizar factura (sin tocar detalles)
-    public static void actualizarFactura(Connection conn, Factura f) {
-        String sql = "UPDATE facturas SET cliente_id = ?, fecha = ?, total = ? WHERE id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, f.getCliente().getId());
-            pstmt.setDate(2, new java.sql.Date(f.getFecha().getTime()));
-            pstmt.setDouble(3, f.getTotal());
-            pstmt.setInt(4, f.getId());
-            int filas = pstmt.executeUpdate();
-            if (filas > 0) {
-                System.out.println("Factura actualizada con ID: " + f.getId());
-            } else {
-                System.out.println("No se encontró factura con ID: " + f.getId());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Eliminar factura (y opcionalmente sus detalles)
-    public static void eliminarFactura(Connection conn, int id) {
+    // Eliminar factura con sus detalles
+    public static void eliminarFactura(Connection conn, int idFactura) {
         try {
-            // Primero eliminar detalles asociados
+            // Primero borrar los detalles
             String sqlDetalles = "DELETE FROM detalle_factura WHERE factura_id = ?";
-            try (PreparedStatement pstmtDetalles = conn.prepareStatement(sqlDetalles)) {
-                pstmtDetalles.setInt(1, id);
-                pstmtDetalles.executeUpdate();
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlDetalles)) {
+                pstmt.setInt(1, idFactura);
+                pstmt.executeUpdate();
             }
 
-            // Luego eliminar la factura
+            // Luego borrar la factura
             String sqlFactura = "DELETE FROM facturas WHERE id = ?";
-            try (PreparedStatement pstmtFactura = conn.prepareStatement(sqlFactura)) {
-                pstmtFactura.setInt(1, id);
-                int filas = pstmtFactura.executeUpdate();
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlFactura)) {
+                pstmt.setInt(1, idFactura);
+                int filas = pstmt.executeUpdate();
                 if (filas > 0) {
-                    System.out.println("Factura eliminada con ID: " + id);
+                    System.out.println("Factura eliminada con id " + idFactura);
                 } else {
-                    System.out.println("No se encontró factura con ID: " + id);
+                    System.out.println("No se encontró factura con id " + idFactura);
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -3,6 +3,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
+    
     private Style btnCliente;
     private JPopupMenu menuCliente;
 
@@ -17,7 +18,7 @@ public class MainWindow extends JFrame {
 
     public MainWindow(){ 
         setTitle("Sistema de Ventas");
-        setSize(400, 400);
+        setSize(300, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 

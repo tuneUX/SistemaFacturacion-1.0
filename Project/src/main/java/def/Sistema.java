@@ -90,7 +90,6 @@ public class Sistema {
             DetalleFacturaDao.insertarDetalle(conn, facturaId, detalle);
             ProductosDao.actualizarStock(conn, idProducto, -cantidad);
 
-            // refrescar inventario
             inventario.setProductos(ProductosDao.listarProductos(conn));
 
             return factura;

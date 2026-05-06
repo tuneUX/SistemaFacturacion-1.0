@@ -5,6 +5,7 @@ import javax.swing.*;
 public class MainController {
     private Sistema sistema;
     private MainWindow ventana;
+    
 
     public MainController(Sistema sistema, MainWindow ventana) {
         this.sistema = sistema;
